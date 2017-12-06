@@ -1,8 +1,11 @@
-#include <string>
+#include <s:tring>
 #include <iostream>
 #include <algorithm>
 #include <vector>
 #include <stdio.h>
+#include <limits.h>
+#include <cmath>
+
 
 unsigned int CountOnesFromInteger(unsigned int value) {
 	unsigned int count;
@@ -79,7 +82,6 @@ int main()
 	unsigned int states = letters.length() / 3;
 
 	char ** table = new char*[states];
-
 	for (unsigned int i = 0; i < states; i++)
 		table[i] = new char[3];
 
@@ -101,12 +103,21 @@ int main()
 	bitnum |= bitnum >> 8;
 	bitnum |= bitnum >> 16;
 	bitnum++;
+	
+	short ** map;
 
-	std::vector<unsigned int> numbers;
+	switch(states) {
+		case 2:
+			map = new char*[2];
+			for(unsigned int i = 0; i < 2; i++) map[i] = new 
+		case 3:
+		case 4:
+	}
+	
+	
 	for (unsigned int i = 0; i < bitnum; numbers.push_back(i++));
 	std::vector<unsigned int> best_found_solution;
 	auto best_solution_adjacency_count = UINT_MAX;
-//	auto best_solution_back_adjacency_count = UINT_MAX;
 	unsigned int iterations = 0;
 	do {
 		std::vector<unsigned int> temp_nums = numbers;
@@ -119,7 +130,6 @@ int main()
 			{
 				best_solution_adjacency_count = current_solution_adjacency_count;
 				best_found_solution = temp_nums;
-//				best_solution_back_adjacency_count = count_back_adjacencies(temp_nums, table, states, 3);
 			}
 
 //			if (current_solution_adjacency_count == best_solution_adjacency_count)
@@ -144,6 +154,7 @@ int main()
 	for (unsigned int i = 0; i < states; i++)
 		delete[] table[i];
 	delete [] table;
-
+#ifdef _WIN32
 	system("pause");
+#endif
 }
