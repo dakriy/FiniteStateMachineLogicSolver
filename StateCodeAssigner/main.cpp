@@ -1,9 +1,12 @@
-#include <string>
 #include <iostream>
 #include <algorithm>
 #include <vector>
 #include <stdio.h>
 #include "quine.h"
+#include <limits.h>
+#include <cmath>
+#include <string>
+
 
 unsigned int next_power_of_two(unsigned int base)
 {
@@ -175,7 +178,6 @@ int main()
 	unsigned int states = letters.length() / 3;
 
 	char ** table = new char*[states];
-
 	for (unsigned int i = 0; i < states; i++)
 		table[i] = new char[3];
 
@@ -191,6 +193,7 @@ int main()
 	// Bitnum is the number of bits needed to represent that many states
 	auto bitnum = next_power_of_two(states);
 
+	
 	std::vector<unsigned int> numbers;
 	for (unsigned int i = 0; i < bitnum; numbers.push_back(i++));
 	std::vector<unsigned int> best_found_solution;
@@ -234,6 +237,7 @@ int main()
 	for (unsigned int i = 0; i < states; i++)
 		delete[] table[i];
 	delete [] table;
-
+#ifdef _WIN32
 	system("pause");
+#endif
 }
