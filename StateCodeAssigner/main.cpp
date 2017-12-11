@@ -90,8 +90,8 @@ inline bool next_combination(const Iterator first, Iterator k, const Iterator la
 
 void GetMinTermsAndDontCares(int * minterm_dec, int & minterm_size, int * dontcare_dec, int& dontcare_size, std::vector<unsigned short> arrangement, char ** table, unsigned int t_rows, unsigned int var_num, std::vector<unsigned int> current_arrangement)
 {
-	std::vector<unsigned int> temporary_term_holder;
-	std::vector<unsigned int> temporary_dont_care_holder;
+	std::vector<int> temporary_term_holder;
+	std::vector<int> temporary_dont_care_holder;
 	for (unsigned int i = 0; i < t_rows; i++)
 	{
 		// w=0 case find minterm decimal value
@@ -106,8 +106,8 @@ void GetMinTermsAndDontCares(int * minterm_dec, int & minterm_size, int * dontca
 		}
 	}
 
-	// Add the don't cares
-	for (unsigned int i = 0; i < pow(2, var_num); i++)
+	// And the don't cares
+	for (unsigned int i = 0; i < pow(2, var_num + 1); i++)
 	{
 		bool in_current_assgn = false;
 		for(unsigned int j = 0; j < current_arrangement.size(); j++)
@@ -125,6 +125,9 @@ void GetMinTermsAndDontCares(int * minterm_dec, int & minterm_size, int * dontca
 		}
 	}
 
+	// Append the dont cares onto the terms cause they need to be there.
+	temporary_term_holder.insert(temporary_term_holder.end(), temporary_dont_care_holder.begin(), temporary_dont_care_holder.end());
+
 
 	minterm_size = temporary_term_holder.size();
 	
@@ -132,8 +135,6 @@ void GetMinTermsAndDontCares(int * minterm_dec, int & minterm_size, int * dontca
 
 	for(unsigned int i = 0; i < minterm_size; i++)
 		minterm_dec[i] = temporary_term_holder[i];
-
-	
 	
 	dontcare_size = temporary_dont_care_holder.size();
 
@@ -150,6 +151,7 @@ void GetMinTermsAndDontCares(int * minterm_dec, int & minterm_size, int * dontca
 int calculate_number_of_terms(unsigned int bitnum, char ** table, unsigned int table_rows, std::vector<unsigned int> arrangment)
 {
 	int number_of_terms = 0;
+	bitnum = log2(bitnum);
 	for (unsigned int i = 0; i < bitnum; i++)
 	{
 		std::vector<unsigned short> arr;
@@ -190,7 +192,7 @@ int main()
 	for (unsigned int i = 0; i < letters.length(); i++)
 		table[i / 3][i % 3] = letters[i] - 0x61;
 
-	// Bitnum is the number of bits needed to represent that many states
+	// Bitnum is the number that can be represented by a certian number of bits.
 	auto bitnum = next_power_of_two(states);
 
 	
