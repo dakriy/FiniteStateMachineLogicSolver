@@ -4,9 +4,9 @@
 class QuineMcCluskeySolver
 {
 private:
-	int i, j, temp, NumberOfDontCare, NumberOfAllMinterm, NumberOfVariable,
+	int i = 0, j = 0, temp = 0, NumberOfDontCare, NumberOfAllMinterm, NumberOfVariable,
 		NumberOfEPI = 0,
-		NumberOfRemainingMT, NumberOfRemainingPI,
+		NumberOfRemainingMT = 0, NumberOfRemainingPI = 0,
 		NumberOfPI = 0,
 		PotEPINo = 0,
 		NumberOfPossibleEPI = 1,
