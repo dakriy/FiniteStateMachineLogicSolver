@@ -173,9 +173,9 @@ std::vector<QuineMcCluskeySolver *> calculate_number_of_terms(unsigned int bitnu
 
 int main()
 {
-	std::string letters = "abcbdeceddafefafbc";
-//	std::cout << "input the 1 input state table with no separation. e.g. present state then the next states" << std::endl;
-//		std::cin >> letters;
+	std::string letters;// = "abcbdeceddafefafbc";
+	std::cout << "input the 1 input state table with no separation. e.g. present state then the next states" << std::endl;
+		std::cin >> letters;
 	unsigned int states = letters.length() / 3;
 
 	char ** table = new char*[states];
@@ -231,7 +231,6 @@ int main()
 			}
 
 			iterations++;
-//			printf("%d\n", iterations);
 		} while (next_permutation(temp_nums.begin(), temp_nums.end()));
 	} while (next_combination(numbers.begin(), numbers.begin() + states, numbers.end()));
 
@@ -239,11 +238,13 @@ int main()
 	std::cout << "Adjacency score: " << best_solution_adjacency_count << std::endl;
 	for (unsigned int i = 0; i < states; i++)
 		std::cout << (char)(table[i][0] + 0x61) << " = " << best_found_solution[i] << std::endl;
-	std::cout << "KMAP for each bit output (with w being the least siginificant bit, also using D flip flops, Also A-D1 and B-D2 and so on and so forth until the last one goes with w): " << std::endl;
+	std::cout << "Number of terms: " << best_number_of_terms << std::endl;
+	std::cout << "KMAP for each bit output (with w being the least siginificant bit, also using D flip flops, Also A=D1 and B=D2 and so on and so forth until the last one goes with w): " << std::endl;
 	for (int i = 0; i < best_solved.size(); i++)
 	{
 		printf("D%d:\n", best_solved.size() - i);
 		best_solved[i]->printCharOutput();
+		printf("\n");
 		delete best_solved[i];
 	}
 	printf("\n");
