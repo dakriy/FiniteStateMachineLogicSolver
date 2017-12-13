@@ -88,7 +88,7 @@ inline bool next_combination(const Iterator first, Iterator k, const Iterator la
 	return false;
 }
 
-void GetMinTermsAndDontCares(int * minterm_dec, int & minterm_size, int * dontcare_dec, int& dontcare_size, std::vector<unsigned short> arrangement, char ** table, unsigned int t_rows, unsigned int var_num, std::vector<unsigned int> current_arrangement)
+void GetMinTermsAndDontCares(int * &minterm_dec, int & minterm_size, int * &dontcare_dec, int& dontcare_size, std::vector<unsigned short> arrangement, char ** table, unsigned int t_rows, unsigned int var_num, std::vector<unsigned int> current_arrangement)
 {
 	std::vector<int> temporary_term_holder;
 	std::vector<int> temporary_dont_care_holder;
@@ -97,7 +97,7 @@ void GetMinTermsAndDontCares(int * minterm_dec, int & minterm_size, int * dontca
 		// w=0 case find minterm decimal value
 		if(arrangement[table[i][1]] == 1)
 		{
-			temporary_term_holder.push_back((current_arrangement[table[i][0]] << 1));
+			temporary_term_holder.push_back((current_arrangement[table[i][0]]) << 1);
 		}
 		// w=1 case find minterm decimal value
 		if(arrangement[table[i][2]] == 1)
@@ -107,10 +107,10 @@ void GetMinTermsAndDontCares(int * minterm_dec, int & minterm_size, int * dontca
 	}
 
 	// And the don't cares
-	for (unsigned int i = 0; i < pow(2, var_num + 1); i++)
+	for (unsigned int i = 0; i < pow(2, var_num); i++)
 	{
 		bool in_current_assgn = false;
-		for(unsigned int j = 0; j < current_arrangement.size(); j++)
+		for(unsigned int j = 0; j < t_rows; j++)
 		{
 			if (current_arrangement[j] == i)
 			{
@@ -148,35 +148,34 @@ void GetMinTermsAndDontCares(int * minterm_dec, int & minterm_size, int * dontca
 	std::sort(dontcare_dec, dontcare_dec + dontcare_size);
 }
 
-int calculate_number_of_terms(unsigned int bitnum, char ** table, unsigned int table_rows, std::vector<unsigned int> arrangment)
+std::vector<QuineMcCluskeySolver *> calculate_number_of_terms(unsigned int bitnum, char ** table, unsigned int table_rows, std::vector<unsigned int> arrangment, int & number_of_terms)
 {
-	int number_of_terms = 0;
+	number_of_terms = 0;
+	// Get actual bitnumb, because before it was the numbeer of states, so now I got actual bit number needed for those states
 	bitnum = log2(bitnum);
+	std::vector<QuineMcCluskeySolver *> solvers;
 	for (unsigned int i = 0; i < bitnum; i++)
 	{
 		std::vector<unsigned short> arr;
 		for (unsigned short j = 0; j < table_rows; j++)
 			arr.push_back((arrangment[j] >> i) & 0x01);
 		
-		int * minterm_decimal = NULL;
-		int * dontcare_decimal = NULL;
+		int * minterm_decimal;
+		int * dontcare_decimal;
 		int minterm_size, dontcare_size;
 		GetMinTermsAndDontCares(minterm_decimal, minterm_size, dontcare_decimal, dontcare_size, arr, table, table_rows, bitnum, arrangment);
-		QuineMcCluskeySolver s(bitnum + 1, minterm_size, dontcare_size, minterm_decimal, dontcare_decimal);
-		number_of_terms += s.numberOfTerms();
-		free(minterm_decimal);
-		free(dontcare_decimal);
-		minterm_decimal = NULL;
-		dontcare_decimal = NULL;
+		QuineMcCluskeySolver * s = new QuineMcCluskeySolver(bitnum + 1, minterm_size, dontcare_size, minterm_decimal, dontcare_decimal);
+		number_of_terms += s->numberOfTerms();
+		solvers.push_back(s);
 	}
-	return number_of_terms;
+	return solvers;
 }
 
 int main()
 {
-	std::string letters;
-	std::cout << "input the 1 input state table with no separation. e.g. present state then the next states" << std::endl;
-		std::cin >> letters;
+	std::string letters = "abcbdeceddafefafbc";
+//	std::cout << "input the 1 input state table with no separation. e.g. present state then the next states" << std::endl;
+//		std::cin >> letters;
 	unsigned int states = letters.length() / 3;
 
 	char ** table = new char*[states];
@@ -199,9 +198,12 @@ int main()
 	std::vector<unsigned int> numbers;
 	for (unsigned int i = 0; i < bitnum; numbers.push_back(i++));
 	std::vector<unsigned int> best_found_solution;
+	std::vector<char> string_best_solved_k_map;
 	auto best_solution_adjacency_count = UINT_MAX;
 	unsigned int best_number_of_terms = UINT_MAX;
 	unsigned int iterations = 0;
+	std::vector<QuineMcCluskeySolver *> best_solved;
+
 	do {
 		std::vector<unsigned int> temp_nums = numbers;
 		do {
@@ -209,25 +211,27 @@ int main()
 			for (unsigned int i = 0; i < states; i++)
 				current_solution_adjacency_count += CountOnesFromInteger(temp_nums[table[i][0]] ^ temp_nums[table[i][1]]) + CountOnesFromInteger(temp_nums[table[i][0]] ^ temp_nums[table[i][2]]);
 			
-			if (current_solution_adjacency_count < best_solution_adjacency_count)
+			if (current_solution_adjacency_count <= best_solution_adjacency_count)
 			{
-				best_solution_adjacency_count = current_solution_adjacency_count;
-				best_found_solution = temp_nums;
-				// Do Quine-McCluskey to find number of terms.
-				best_number_of_terms = calculate_number_of_terms(bitnum, table, states, temp_nums);
-			}
-			if (current_solution_adjacency_count == best_solution_adjacency_count)
-			{
-				int this_time_terms = calculate_number_of_terms(bitnum, table, states, temp_nums);
+				int this_time_terms;
+				std::vector<QuineMcCluskeySolver *> s = calculate_number_of_terms(bitnum, table, states, temp_nums, this_time_terms);
 				if (this_time_terms < best_number_of_terms)
 				{
+					for (auto solver : best_solved)
+						delete solver;
 					best_solution_adjacency_count = current_solution_adjacency_count;
 					best_found_solution = temp_nums;
 					best_number_of_terms = this_time_terms;
+					best_solved = s;
 				}
+				else
+					for (auto solver : s)
+						delete solver;
+
 			}
 
 			iterations++;
+//			printf("%d\n", iterations);
 		} while (next_permutation(temp_nums.begin(), temp_nums.end()));
 	} while (next_combination(numbers.begin(), numbers.begin() + states, numbers.end()));
 
@@ -235,10 +239,18 @@ int main()
 	std::cout << "Adjacency score: " << best_solution_adjacency_count << std::endl;
 	for (unsigned int i = 0; i < states; i++)
 		std::cout << (char)(table[i][0] + 0x61) << " = " << best_found_solution[i] << std::endl;
-
+	std::cout << "KMAP for each bit output (with w being the least siginificant bit, also using D flip flops, Also A-D1 and B-D2 and so on and so forth until the last one goes with w): " << std::endl;
+	for (int i = 0; i < best_solved.size(); i++)
+	{
+		printf("D%d:\n", best_solved.size() - i);
+		best_solved[i]->printCharOutput();
+		delete best_solved[i];
+	}
+	printf("\n");
 	for (unsigned int i = 0; i < states; i++)
 		delete[] table[i];
 	delete [] table;
+		
 #ifdef _WIN32
 	system("pause");
 #endif

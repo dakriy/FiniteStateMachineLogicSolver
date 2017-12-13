@@ -1,5 +1,7 @@
 #pragma once
 #include <cmath>
+#include <memory>
+#include <vector>
 
 class QuineMcCluskeySolver
 {
@@ -27,6 +29,7 @@ private:
 
 public:
 	int numberOfTerms();
+	void printCharOutput() const;
 	QuineMcCluskeySolver(int variable_num, int minterm_num, int dontcare_num, int * minterm_decimal, int * dontcare_decimal);
 	~QuineMcCluskeySolver();
 };

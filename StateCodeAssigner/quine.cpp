@@ -92,47 +92,88 @@ QuineMcCluskeySolver::QuineMcCluskeySolver(int variable_num, int minterm_num, in
 
 QuineMcCluskeySolver::~QuineMcCluskeySolver()
 {
-	for (i = 0; i <= NumberOfAllMinterm; i++)
-		free(Minterm_Binary[i]);
-	free(Minterm_Binary);
-
-
-	for (i = 0; i<NumberOfPossibleEPI; i++)
-		free(Potential_EPI[i]);
-	free(Potential_EPI);
-
-	for (i = 0; i < NumberOfVariable; i++)
+	if (Minterm_Binary != NULL)
 	{
-		for (j = 0; j < NumberOfVariable; j++)
+		for (i = 0; i <= NumberOfAllMinterm; i++)
+		{
+			free(Minterm_Binary[i]);
+			Minterm_Binary[i] = NULL;
+		}
+//		free(Minterm_Binary);
+		Minterm_Binary = NULL;		
+	}
+
+
+	if (Potential_EPI != NULL)
+	{
+		for (i = 0; i<NumberOfPossibleEPI; i++)
+		{
+			free(Potential_EPI[i]);
+			Potential_EPI[i] = NULL;
+		}
+		free(Potential_EPI);
+		Potential_EPI = NULL;
+	}
+
+	for (i = 0; i < NumberOfVariable + 1; i++)
+	{
+		for (j = 0; j < NumberOfVariable + 1 - i; j++)
+		{
 			free(Column[i][j]);
+			Column[i][j] = NULL;
+		}
 		free(Column[i]);
+		Column[i] = NULL;
 	}
 	free(Column);
+	Column = NULL;
 
 	free(NumberCounter);
+	NumberCounter = NULL;
 	
 	for (i = 0; i<NumberOfAllMinterm; i++)
+	{
 		free(PI_Index[i]);
+		PI_Index[i] = NULL;
+	}
 	free(PI_Index);
+	PI_Index = NULL;
 
 	free(EPI_Index);
+	EPI_Index = NULL;
 
 	if (NumberOfRemainingPI != 0)
 	{
 		for (i = 0; i < NumberOfRemainingMT; i++)
+		{
+			if (ReducedPIChart == NULL) break;
 			free(ReducedPIChart[i]);
+			ReducedPIChart[i] = NULL;
+		}
 		for (i = 0; i<NumberOfPossibleEPI; i++)
 		{
+			if (Potential_EPI == NULL) break;
 			free(Potential_EPI[i]);
+			Potential_EPI[i] = NULL;
 		}
 		free(Potential_EPI);
 		free(For);
 	}
+	For = NULL;
+	Potential_EPI = NULL;
 
 	free(ReducedPIChart_X);
+	ReducedPIChart_X = NULL;
 	free(ReducedPIChart_Y);
+	ReducedPIChart_Y = NULL;
 	free(ReducedPIChart);
+	ReducedPIChart = NULL;
 	free(NoOfPIForEPI);
+	NoOfPIForEPI = NULL;
+	free(MintermIndicesDecimal);
+	free(MintermIndicesDecimal_DontCare);
+	MintermIndicesDecimal = NULL;
+	MintermIndicesDecimal_DontCare = NULL;
 }
 
 int QuineMcCluskeySolver::numberOfTerms()
@@ -202,13 +243,14 @@ int QuineMcCluskeySolver::numberOfTerms()
 			{
 				int p, position;
 				m = 0;
-				for (k = 0; k<Combination(NumberOfVariable, i, j); k++)
+				for (k = 0; k < Combination(NumberOfVariable, i, j); k++)
+				{
 					if (Column[i][j][k] != NULL)
 					{
-						for (l = 0; l<Combination(NumberOfVariable, i, j + 1); l++)
+						for (l = 0; l < Combination(NumberOfVariable, i, j + 1); l++)
 						{
 							if (Column[i][j + 1][l] != NULL
-								&& Column[i][j + 1][l][NumberOfVariable + 2 + i]>Column[i][j][k][NumberOfVariable + 2 + i] &&
+								&& Column[i][j + 1][l][NumberOfVariable + 2 + i] > Column[i][j][k][NumberOfVariable + 2 + i] &&
 								IsPowerOfTwo(Column[i][j + 1][l][NumberOfVariable + 2 + i] -
 									Column[i][j][k][NumberOfVariable + 2 + i]))
 							{
@@ -233,19 +275,19 @@ int QuineMcCluskeySolver::numberOfTerms()
 										Column[i + 1][j][m][n] = Column[i][j][k][n];
 									}
 									Column[i + 1][j][m][NumberOfVariable + 3 + i] = Column[i][j][k][NumberOfVariable + 2 + i];
-									for (n = NumberOfVariable + 4 + i; n<NumberOfVariable + 4 + i + pow(2, i + 1); n++)
+									for (n = NumberOfVariable + 4 + i; n < NumberOfVariable + 4 + i + pow(2, i + 1); n++)
 										Column[i + 1][j][m][n] = 0;
 									position = log((Column[i][j + 1][l][NumberOfVariable + 2 + i] -
 										Column[i][j][k][NumberOfVariable + 2 + i])) / log(2);
 									Column[i + 1][j][m][NumberOfVariable - 1 - position] = 2;
 									Column[i + 1][j][m][NumberOfVariable + 1] = 0;
 									Column[i + 1][j][m][NumberOfVariable + 2 + i] = position;
-									for (p = 0; p<pow(2, i); p++)
+									for (p = 0; p < pow(2, i); p++)
 									{
 										Column[i + 1][j][m][NumberOfVariable + 4 + i + p] = Column[i][j][k][NumberOfVariable + 3 + i +
 											p];
 									}
-									for (p = pow(2, i); p<pow(2, i + 1); p++)
+									for (p = pow(2, i); p < pow(2, i + 1); p++)
 									{
 										Column[i + 1][j][m][NumberOfVariable + 4 + i + p] = Column[i][j + 1][l][NumberOfVariable + 3 +
 											i + p - (int)pow(2, i)];
@@ -255,6 +297,7 @@ int QuineMcCluskeySolver::numberOfTerms()
 							}
 						}
 					}
+				}
 			}
 		}
 	}
@@ -368,9 +411,8 @@ int QuineMcCluskeySolver::numberOfTerms()
 				for (k = 0; k<NumberOfRemainingMT; k++)
 					if (Column[ReducedPIChart_Y[i][0]][ReducedPIChart_Y[i][1]][ReducedPIChart_Y[i][2
 					]][NumberOfVariable + 3 + ReducedPIChart_Y[i][0] + j] == ReducedPIChart_X[k])
-					{
 						ReducedPIChart[k][i] = 1;
-					}
+					
 		/***********Select the EPIs from the Reduced PI Chart***********/
 		For = (int *)malloc(NumberOfRemainingMT * sizeof(int)); /* For[i] will be
 																used in the function 'Recursion_For_Loop(int m)' */
@@ -411,24 +453,35 @@ int QuineMcCluskeySolver::numberOfTerms()
 	}
 
 	/***********Print the final result of minimal SOP expression***********/
-	//	printf("\n\nThe simplified SOP expression is:\n\n");
-	//	printf("\n ");
 	int num_of_terms = 0;
 	for (x = 0; x<NumberOfEPI; x++)
 	{
+		int vars = 0;
 		for (y = 0; y<NumberOfVariable; y++)
 		{
-			if (Column[EPI_Index[x][0]][EPI_Index[x][1]][EPI_Index[x][2]][y] == 1) num_of_terms++;
-			//				printf("%c", 65 + y);
+			if (Column[EPI_Index[x][0]][EPI_Index[x][1]][EPI_Index[x][2]][y] == 1) vars++;
 			else
-				if (Column[EPI_Index[x][0]][EPI_Index[x][1]][EPI_Index[x][2]][y] == 0) num_of_terms++;
-			//					printf("%c'", 65 + y);
+				if (Column[EPI_Index[x][0]][EPI_Index[x][1]][EPI_Index[x][2]][y] == 0) vars++;
 		}
-		//		if (x<NumberOfEPI - 1)
-		//			printf("+");
+		if (vars > 0) num_of_terms++;
 	}
-	//	printf("\n\nPress any key to exit...");
-	//	scanf("%d", &i);
-	//	return 0;	
 	return num_of_terms;
+}
+
+void QuineMcCluskeySolver::printCharOutput() const
+{
+	for (int x = 0; x<NumberOfEPI; x++)
+	{
+		for (int y = 0; y<NumberOfVariable; y++)
+		{
+			if (Column[EPI_Index[x][0]][EPI_Index[x][1]][EPI_Index[x][2]][y] == 1) printf("%c", y + 65);
+			else
+				if (Column[EPI_Index[x][0]][EPI_Index[x][1]][EPI_Index[x][2]][y] == 0)
+				{
+					printf("%c'", y + 65);
+				}
+		}
+		if (x < NumberOfEPI - 1)
+			printf("+");
+	}
 }
