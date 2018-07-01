@@ -119,7 +119,7 @@ QuineMcCluskeySolver::~QuineMcCluskeySolver()
 	{
 		for (j = 0; j < NumberOfVariable + 1 - i; j++)
 		{
-			free(Column[i][j]);
+//			free(Column[i][j]);
 			Column[i][j] = NULL;
 		}
 		free(Column[i]);
